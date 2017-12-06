@@ -6,15 +6,26 @@ import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { AppContainer } from 'react-hot-loader';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import { deepOrange500 } from 'material-ui/styles/colors';
+
+import injectTapEventPlugin from 'react-tap-event-plugin';
 
 import configureStore from './store/configureStore';
 import App from './components/App';
 
 const store = configureStore();
 const rootElement = document.getElementById('app');
+injectTapEventPlugin();
+
+const muiTheme = getMuiTheme({
+  palette: {
+    accent1Color: deepOrange500,
+  },
+});
 
 render(
-  <MuiThemeProvider>
+  <MuiThemeProvider muiTheme={muiTheme}>
     <AppContainer>
       <Provider store={store}>
         <App />
@@ -30,11 +41,13 @@ if (module.hot) {
     const NextApp = require('./components/App').default;
 
     render(
-      <AppContainer>
-        <Provider store={store}>
-          <NextApp />
-        </Provider>
-      </AppContainer>,
+      <MuiThemeProvider muiTheme={muiTheme}>
+        <AppContainer>
+          <Provider store={store}>
+            <NextApp />
+          </Provider>
+        </AppContainer>
+      </MuiThemeProvider>,
       rootElement
     );
   });
