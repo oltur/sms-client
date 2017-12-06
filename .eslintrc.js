@@ -11,6 +11,8 @@ module.exports = {
     'arrow-parens': 'off',
     'global-require': 'off',
     'spaced-comment': 'off',
+    'linebreak-style': 'off',
+    'class-methods-use-this': 'off',
     'comma-dangle': ['error', {
       arrays: 'always-multiline',
       objects: 'always-multiline',

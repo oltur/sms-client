@@ -5,6 +5,7 @@ import React from 'react';
 import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { AppContainer } from 'react-hot-loader';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 import configureStore from './store/configureStore';
 import App from './components/App';
@@ -13,11 +14,13 @@ const store = configureStore();
 const rootElement = document.getElementById('app');
 
 render(
-  <AppContainer>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </AppContainer>,
+  <MuiThemeProvider>
+    <AppContainer>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </AppContainer>
+  </MuiThemeProvider>,
   rootElement
 );
 

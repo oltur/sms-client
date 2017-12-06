@@ -1,12 +1,42 @@
 import React from 'react';
 import Spinner from 'react-spinkit';
 
+import DataTables from 'material-ui-datatables';
+
 import Button from '../../ui/Button/Button';
 import ListItem from '../../business/list-item/list-item';
 import SearchService from '../../../services/search.service';
 
 import Person from '../../../models/person';
 import './home-page.scss';
+
+const TABLE_COLUMNS = [
+  {
+    key: 'name',
+    label: 'Dessert (100g serving)',
+  }, {
+    key: 'calories',
+    label: 'Calories',
+  },
+
+];
+
+const TABLE_DATA = [
+  {
+    name: 'Frozen yogurt',
+    calories: '159',
+    fat: '6.0',
+    carbs: '24',
+
+  }, {
+    name: 'Ice cream sandwich',
+    calories: '159',
+    fat: '6.0',
+    carbs: '24',
+
+  },
+
+];
 
 class HomePage extends React.Component {
   constructor(props) {
@@ -34,6 +64,14 @@ class HomePage extends React.Component {
       });
       this.doSearch(1);
     }
+  }
+
+  handleFilterValueChange = (value) => {
+    // your filter logic
+  }
+
+  handleSortOrderChange = (key, order) => {
+    // your sort logic
   }
 
   doSearch(timeout = 1000) {
@@ -114,6 +152,22 @@ class HomePage extends React.Component {
         <h1 style={{ fontSize: 50, fontWeigth: 'bold', textAlign: 'center' }}>
           People Search for Klarna
         </h1>
+
+        <DataTables
+          height="auto"
+          selectable={false}
+          sortable
+          showRowHover
+          columns={TABLE_COLUMNS}
+          data={TABLE_DATA}
+          showCheckboxes={false}
+          onCellClick={this.handleCellClick}
+          onCellDoubleClick={this.handleCellDoubleClick}
+          onFilterValueChange={this.handleFilterValueChange}
+          onSortOrderChange={this.handleSortOrderChange}
+          page={1}
+          count={100}
+        />
 
         <div className="search">
           <div className="cui__input giant">
