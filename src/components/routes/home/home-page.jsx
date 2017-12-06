@@ -10,34 +10,6 @@ import SearchService from '../../../services/search.service';
 import Person from '../../../models/person';
 import './home-page.scss';
 
-const TABLE_COLUMNS = [
-  {
-    key: 'name',
-    label: 'Dessert (100g serving)',
-  }, {
-    key: 'calories',
-    label: 'Calories',
-  },
-
-];
-
-const TABLE_DATA = [
-  {
-    name: 'Frozen yogurt',
-    calories: '159',
-    fat: '6.0',
-    carbs: '24',
-
-  }, {
-    name: 'Ice cream sandwich',
-    calories: '159',
-    fat: '6.0',
-    carbs: '24',
-
-  },
-
-];
-
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
@@ -45,11 +17,37 @@ class HomePage extends React.Component {
       labelVisibility: 'visible',
       searchInputValue: '',
       page: 1,
-      data: [],
+      columns: [
+        {
+          key: 'name',
+          sortable: true,
+          label: 'Dessert (100g serving)',
+        }, {
+          key: 'calories',
+          sortable: true,
+          label: 'Calories',
+        },
+      ],
+      data: [
+        {
+          name: 'Frozen yogurt',
+          calories: 159,
+          fat: 6.6,
+          carbs: 24,
+        }, {
+          name: 'Ice cream sandwich',
+          calories: 1159,
+          fat: 6.0,
+          carbs: 22,
+        },
+      ],
       queryInProgress: false,
     };
     this.delayTimer = null;
     this.searchService = new SearchService();
+
+    this.handleSortOrderChange = this.handleSortOrderChange.bind(this);
+    this.handleFilterValueChange = this.handleFilterValueChange.bind(this);
   }
 
   get hasData() {
@@ -66,12 +64,23 @@ class HomePage extends React.Component {
     }
   }
 
-  handleFilterValueChange = (value) => {
+  handleFilterValueChange(value) {
     // your filter logic
   }
 
-  handleSortOrderChange = (key, order) => {
-    // your sort logic
+  handleSortOrderChange(key, order) {
+    function comparatorAsc(a, b) {
+      if (a[key] > b[key]) { return 1; }
+      if (a[key] === b[key]) { return 0; }
+      return -1;
+    }
+    function comparatorDesc(a, b) {
+      return comparatorAsc(a, b) * -1;
+    }
+    this.setState({
+      ...this.state,
+      data: this.state.data.sort(order === 'asc' ? comparatorAsc : comparatorDesc),
+    });
   }
 
   doSearch(timeout = 1000) {
@@ -150,21 +159,21 @@ class HomePage extends React.Component {
       <div>
 
         <h1 style={{ fontSize: 50, fontWeigth: 'bold', textAlign: 'center' }}>
-          People Search for Klarna
+          Sms task
         </h1>
 
         <DataTables
           height="auto"
           selectable={false}
-          sortable
           showRowHover
-          columns={TABLE_COLUMNS}
-          data={TABLE_DATA}
+          columns={this.state.columns}
+          data={this.state.data}
           showCheckboxes={false}
-          onCellClick={this.handleCellClick}
-          onCellDoubleClick={this.handleCellDoubleClick}
-          onFilterValueChange={this.handleFilterValueChange}
+          //          onCellClick={this.handleCellClick}
+          //          onCellDoubleClick={this.handleCellDoubleClick}
+          //          onFilterValueChange={this.handleFilterValueChange}
           onSortOrderChange={this.handleSortOrderChange}
+          initialSort={{ column: 'name', order: 'asc' }}
           page={1}
           count={100}
         />
