@@ -2,7 +2,7 @@
 
 Based on this great boilerplate: https://github.com/rtivital/react-pages-boilerplate.
 
-Production build is now hosted at Gitub pages at https://oltur.github.io/sms-frontend/#/.
+Production build is now hosted at Gitub pages at https://oltur.github.io/sms-client/#/.
 
 Uses https://***.appspot.com/sms search as a backend.
 
