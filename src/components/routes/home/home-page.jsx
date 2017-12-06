@@ -1,6 +1,8 @@
 import React from 'react';
 import Spinner from 'react-spinkit';
 
+import DatePicker from 'material-ui/DatePicker';
+
 import DataTables from 'material-ui-datatables';
 
 import { Card, CardHeader } from 'material-ui/Card';
@@ -8,19 +10,23 @@ import { Card, CardHeader } from 'material-ui/Card';
 // import Button from '../../ui/Button/Button';
 // import ListItem from '../../business/list-item/list-item';
 import SearchService from '../../../services/search.service';
+import DateTools from '../../../tools/date-tools';
 
-// import Person from '../../../models/person';
 import './home-page.scss';
 
 class HomePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      from: this.formatDate(this.addYears(-5)),
-      to: this.formatDate(new Date()),
+      from: this.addYears(-5),
+      to: new Date(),
       page: 1,
       columns: [
         {
+          key: 'id',
+          sortable: true,
+          label: 'Id',
+        }, {
           key: 'city',
           sortable: true,
           label: 'City',
@@ -29,9 +35,30 @@ class HomePage extends React.Component {
           sortable: true,
           label: 'Start date',
         }, {
-          key: 'endt_date',
+          key: 'end_date',
           sortable: true,
           label: 'End date',
+        }, {
+          key: 'price',
+          sortable: true,
+          label: 'Price',
+          alignRight: true  ,
+        }, {
+          key: 'status',
+          sortable: true,
+          label: 'Status',
+        }, {
+          key: 'color',
+          sortable: true,
+          label: 'Color',
+        }, {
+          key: 'created',
+          sortable: true,
+          label: 'Created',
+        }, {
+          key: 'updated',
+          sortable: true,
+          label: 'Updated',
         },
       ],
       data: [],
@@ -72,18 +99,6 @@ class HomePage extends React.Component {
     return result;
   }
 
-  formatDate(date) {
-    const d = new Date(date);
-    let month = `${d.getMonth() + 1}`;
-    let day = `${d.getDate()}`;
-    const year = d.getFullYear();
-
-    if (month.length < 2) month = `0${month}`;
-    if (day.length < 2) day = `0${day}`;
-
-    return [year, month, day].join('-');
-  }
-
   handleSortOrderChange(key, order) {
     function comparatorAsc(a, b) {
       if (a[key] > b[key]) { return 1; }
@@ -103,8 +118,10 @@ class HomePage extends React.Component {
     clearTimeout(this.delayTimer);
     this.delayTimer = setTimeout(() => {
       this.showProgress(true);
-      this.searchService.search(this.state.from, this.state.to).then((result) => {
-        console.log(`Result for ${this.state.from}, ${this.state.to}`);
+      const from = DateTools.formatDate(this.state.from);
+      const to = DateTools.formatDate(this.state.to);
+      this.searchService.search(from, to).then((result) => {
+        console.log(`Result for ${from}, ${to}`);
         // console.log(result);
         this.showProgress(false);
         this.setState({
@@ -171,33 +188,29 @@ class HomePage extends React.Component {
           titleStyle={{ fontSize: 20 }}
         />
 
-        <div className="search">
-          <div className="group">
-            <label
-              htmlFor="fromDate"
-            >
+        <div className="filter">
+          <label
+            htmlFor="fromDate"
+          >
               From date
-            </label>
-            <input
-              id="fromDate"
-              type="date"
-              value={this.state.from}
-              onChange={(evt) => this.updateFilter(evt.target.value, this.state.to)}
-            />
-          </div>
-          <div className="group">
-            <label
-              htmlFor="toDate"
-            >
+          </label>
+          <DatePicker
+            hintText="fromDate"
+            value={this.state.from}
+            container="inline"
+            onChange={(evt, date) => this.updateFilter(date, this.state.to)}
+          />
+          <label
+            htmlFor="toDate"
+          >
               To date
-            </label>
-            <input
-              id="toDate"
-              type="date"
-              value={this.state.to}
-              onChange={(evt) => this.updateFilter(this.state.from, evt.target.value)}
-            />
-          </div>
+          </label>
+          <DatePicker
+            hintText="toDate"
+            value={this.state.to}
+            container="inline"
+            onChange={(evt, date) => this.updateFilter(this.state.from, date)}
+          />
         </div>
         <div className="results">
           {this.state.queryInProgress ?
@@ -219,10 +232,9 @@ class HomePage extends React.Component {
             columns={this.state.columns}
             data={this.state.data}
             showCheckboxes={false}
+            showFooterToolbar={false}
             onSortOrderChange={this.handleSortOrderChange}
             initialSort={{ column: 'name', order: 'asc' }}
-            page={1}
-            count={100}
           />
         </div>
       </Card>
