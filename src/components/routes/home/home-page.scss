@@ -1,3 +1,9 @@
 .filter {
-  margin: 20px;
+  div {
+    margin: 20px;
+    label {
+      display: inline-block;
+      width: 100px;
+    }    
+  }
 }

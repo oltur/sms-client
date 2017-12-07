@@ -7,8 +7,7 @@ import DataTables from 'material-ui-datatables';
 
 import { Card, CardHeader } from 'material-ui/Card';
 
-// import Button from '../../ui/Button/Button';
-// import ListItem from '../../business/list-item/list-item';
+import Button from '../../ui/Button/Button';
 import SearchService from '../../../services/search.service';
 import DateTools from '../../../tools/date-tools';
 
@@ -42,7 +41,7 @@ class HomePage extends React.Component {
           key: 'price',
           sortable: true,
           label: 'Price',
-          alignRight: true  ,
+          alignRight: true,
         }, {
           key: 'status',
           sortable: true,
@@ -51,14 +50,6 @@ class HomePage extends React.Component {
           key: 'color',
           sortable: true,
           label: 'Color',
-        }, {
-          key: 'created',
-          sortable: true,
-          label: 'Created',
-        }, {
-          key: 'updated',
-          sortable: true,
-          label: 'Updated',
         },
       ],
       data: [],
@@ -67,6 +58,8 @@ class HomePage extends React.Component {
     this.delayTimer = null;
     this.searchService = new SearchService();
     this.handleSortOrderChange = this.handleSortOrderChange.bind(this);
+    this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this);
+    this.handleNextPageClick = this.handleNextPageClick.bind(this);
   }
 
   componentDidMount() {
@@ -88,6 +81,16 @@ class HomePage extends React.Component {
       });
       this.doSearch(1);
     }
+  }
+
+  handlePreviousPageClick() {
+    console.log('handlePreviousPageClick');
+    this.setPage(this.state.page - 1);
+  }
+
+  handleNextPageClick() {
+    console.log('handleNextPageClick');
+    this.setPage(this.state.page + 1);
   }
 
   addYears(years = -5, date = new Date()) {
@@ -114,22 +117,37 @@ class HomePage extends React.Component {
     });
   }
 
-  doSearch(timeout = 300) {
+  doSearch(timeout = 1) {
     clearTimeout(this.delayTimer);
     this.delayTimer = setTimeout(() => {
       this.showProgress(true);
       const from = DateTools.formatDate(this.state.from);
       const to = DateTools.formatDate(this.state.to);
-      this.searchService.search(from, to).then((result) => {
-        console.log(`Result for ${from}, ${to}`);
-        // console.log(result);
-        this.showProgress(false);
-        this.setState({
-          ...this.state,
-          data: result,
-        });
-        this.forceUpdate();
-      });
+      this.searchService.search(from, to, (this.state.page - 1) * 10, 10)
+        .then(
+          (result) => {
+            console.log(`Result for ${from}, ${to}`);
+            // console.log(result);
+            this.showProgress(false);
+            this.setState({
+              ...this.state,
+              data: result,
+            });
+            this.forceUpdate();
+          },
+          (error) => {
+            if (this.state.page > 1) {
+              this.setPage(this.state.page - 1);
+            } else {
+              this.showProgress(false);
+              this.setState({
+                ...this.state,
+                data: [],
+              });
+              this.forceUpdate();
+            }
+          }
+        );
     }, timeout); // Will do the ajax stuff after 1000 ms, or 1 s
   }
 
@@ -155,32 +173,10 @@ class HomePage extends React.Component {
       page: 1,
     });
 
-    this.doSearch();
+    //    this.doSearch();
   }
 
   render() {
-    // //console.log(this.state.data.data);
-    // const navPrev =
-    //   this.hasData && this.state.data.hasPrev ?
-    //     (
-    //       <Button theme="blue" onClick={() => this.setPage(this.state.page - 1)}>Prev</Button>
-    //     )
-    //     : null;
-
-    // const navNext =
-    //   this.hasData && this.state.data.hasNext ?
-    //     (
-    //       <Button theme="blue" onClick={() => this.setPage(this.state.page + 1)}>Next</Button>
-    //     )
-    //     : null;
-
-
-    // const listItems = this.hasData ?
-    //   this.state.data.data.map((item) =>
-    //     (
-    //       <ListItem key={item.id} item={new Person(item)} />
-    //     )) : (<div>No data</div>);
-
     return (
       <Card style={{ margin: 12, textAlign: 'left' }}>
         <CardHeader
@@ -189,28 +185,35 @@ class HomePage extends React.Component {
         />
 
         <div className="filter">
-          <label
-            htmlFor="fromDate"
-          >
+          <div>
+            <label
+              htmlFor="fromDate"
+            >
               From date
-          </label>
-          <DatePicker
-            hintText="fromDate"
-            value={this.state.from}
-            container="inline"
-            onChange={(evt, date) => this.updateFilter(date, this.state.to)}
-          />
-          <label
-            htmlFor="toDate"
-          >
+            </label>
+            <input
+              value={DateTools.formatDate(this.state.from)}
+              id="fromDate"
+              type="date"
+              onChange={(evt) => this.updateFilter(evt.target.value, this.state.to)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="toDate"
+            >
               To date
-          </label>
-          <DatePicker
-            hintText="toDate"
-            value={this.state.to}
-            container="inline"
-            onChange={(evt, date) => this.updateFilter(this.state.from, date)}
-          />
+            </label>
+            <input
+              value={DateTools.formatDate(this.state.to)}
+              if="toDate"
+              type="date"
+              onChange={(evt) => this.updateFilter(this.state.from, evt.target.value)}
+            />
+          </div>
+          <div>
+            <Button theme="blue" onClick={() => this.doSearch()}>Refresh</Button>
+          </div>
         </div>
         <div className="results">
           {this.state.queryInProgress ?
@@ -231,8 +234,11 @@ class HomePage extends React.Component {
             showRowHover
             columns={this.state.columns}
             data={this.state.data}
+            page={this.state.page}
+            count={1000}
+            onNextPageClick={this.handleNextPageClick}
+            onPreviousPageClick={this.handlePreviousPageClick}
             showCheckboxes={false}
-            showFooterToolbar={false}
             onSortOrderChange={this.handleSortOrderChange}
             initialSort={{ column: 'name', order: 'asc' }}
           />

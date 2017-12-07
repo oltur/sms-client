@@ -1,21 +1,29 @@
 import $ from 'jquery';
+import url from 'url';
 import DateTools from '../tools/date-tools';
 
 class SearchService {
-  search(from, to) {
-    console.log(`Querying for ${from}, ${to}`);
-    const url = `http://localhost:3000/sms?limit=2000&$where=this.start_date%3E=ISODate(%27${from}%27)%26%26this.end_date%3C=ISODate(%27${to}%27)`;
-    return $.get(url)
-      .promise().then((data) => {
-        data.forEach((el) => {
-          el.start_date = DateTools.formatDate(new Date(el.start_date));
-          el.end_date = DateTools.formatDate(new Date(el.end_date));
-          el.created = DateTools.formatDateTime(new Date(el.created));
-          el.updated = DateTools.formatDateTime(new Date(el.updated));
-          el.price = parseFloat(el.price);
-        });
-        return Promise.resolve(data);
-      });
+  search(from, to, skip = 0, limit = 1000) {
+    const baseUrl = 'http://localhost:3000/sms';
+    const requestUrl = url.resolve(baseUrl, `?skip=${skip}&limit=${limit}&$where=this.end_date>=ISODate('${from}')%26%26this.start_date<=ISODate('${to}')%26%26this.start_date<=this.end_date`);
+    console.log(requestUrl);
+    return $.get(requestUrl)
+      .promise().then(
+        (data) => {
+          data.forEach((el) => {
+            el.start_date = DateTools.formatDate(new Date(el.start_date));
+            el.end_date = DateTools.formatDate(new Date(el.end_date));
+            el.created = DateTools.formatDateTime(new Date(el.created));
+            el.updated = DateTools.formatDateTime(new Date(el.updated));
+            el.price = parseFloat(el.price);
+          });
+          return Promise.resolve(data);
+        },
+        (error) => {
+          console.log(error);
+          return Promise.reject(error);
+        }
+      );
   }
 }
 
