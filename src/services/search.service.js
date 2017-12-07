@@ -4,7 +4,7 @@ import DateTools from '../tools/date-tools';
 
 class SearchService {
   search(from, to, skip = 0, limit = 1000, sortKey = 'id', sortOrder = 'asc') {
-    const baseUrl = 'http://turevski.com:3000';//'http://localhost:3000/sms';
+    const baseUrl = 'https://oltur-sms-server.herokuapp.com/sms';//'http://localhost:3000/sms';
     const requestUrl = url.resolve(baseUrl, `/sms?sortKey=${sortKey}&sortOrder=${sortOrder}&skip=${skip}&limit=${limit}&$where=this.end_date>=ISODate('${from}')%26%26this.start_date<=ISODate('${to}')%26%26this.start_date<=this.end_date`);
     console.log(requestUrl);
     return $.get(requestUrl)
