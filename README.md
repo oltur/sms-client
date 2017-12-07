@@ -4,7 +4,7 @@ Based on this great boilerplate: https://github.com/rtivital/react-pages-boilerp
 
 Production build is now hosted at Gitub pages at https://oltur.github.io/sms-client/#/.
 
-Uses https://***.appspot.com/sms search as a backend.
+Uses http://turevski.com:3000/sms as a backend.
 
 ## npm scripts
 * `npm start` – starts development server with webpack-dev-server
