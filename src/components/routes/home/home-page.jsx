@@ -18,6 +18,9 @@ class HomePage extends React.Component {
       from: DateTools.addYears(-5),
       to: new Date(),
       page: 1,
+      pageSize: 10,
+      sortKey: 'id',
+      sortOrder: 'asc',
       columns: [
         {
           key: 'id',
@@ -58,14 +61,15 @@ class HomePage extends React.Component {
     this.handleSortOrderChange = this.handleSortOrderChange.bind(this);
     this.handlePreviousPageClick = this.handlePreviousPageClick.bind(this);
     this.handleNextPageClick = this.handleNextPageClick.bind(this);
+    this.handleRowSizeChange = this.handleRowSizeChange.bind(this);
   }
 
   componentDidMount() {
     this.doSearch();
   }
 
-  componentWillUnmount() {
-  }
+  // componentWillUnmount() {
+  // }
 
   componentDidUpdate(prevProps, prevState) {
     const elems = document.querySelectorAll('div.results table tbody tr td:nth-child(7)');
@@ -87,6 +91,14 @@ class HomePage extends React.Component {
     }
   }
 
+  handleRowSizeChange(position, pageSize) {
+    this.setState({
+      ...this.state,
+      pageSize,
+    });
+    this.doSearch(1);
+  }
+
   handlePreviousPageClick() {
     console.log('handlePreviousPageClick');
     this.setPage(this.state.page - 1);
@@ -98,18 +110,13 @@ class HomePage extends React.Component {
   }
 
   handleSortOrderChange(key, order) {
-    function comparatorAsc(a, b) {
-      if (a[key] > b[key]) { return 1; }
-      if (a[key] === b[key]) { return 0; }
-      return -1;
-    }
-    function comparatorDesc(a, b) {
-      return comparatorAsc(a, b) * -1;
-    }
     this.setState({
       ...this.state,
-      data: this.state.data.sort(order === 'asc' ? comparatorAsc : comparatorDesc),
+      sortKey: key,
+      sortOrder: order,
     });
+
+    this.doSearch(1);
   }
 
   doSearch(timeout = 1) {
@@ -118,30 +125,34 @@ class HomePage extends React.Component {
       this.showProgress(true);
       const from = DateTools.formatDate(this.state.from);
       const to = DateTools.formatDate(this.state.to);
-      this.searchService.search(from, to, (this.state.page - 1) * 10, 10)
+      this.searchService.search(
+        from, to,
+        (this.state.page - 1) * this.state.pageSize, this.state.pageSize,
+        this.state.sortKey, this.state.sortOrder
+      )
         .then(
-        (result) => {
-          console.log(`Result for ${from}, ${to}`);
-          // console.log(result);
-          this.showProgress(false);
-          this.setState({
-            ...this.state,
-            data: result,
-          });
-          this.forceUpdate();
-        },
-        (error) => {
-          if (this.state.page > 1) {
-            this.setPage(this.state.page - 1);
-          } else {
+          (result) => {
+            console.log(`Result for ${from}, ${to}`);
+            // console.log(result);
             this.showProgress(false);
             this.setState({
               ...this.state,
-              data: [],
+              data: result,
             });
             this.forceUpdate();
+          },
+          (error) => {
+            if (this.state.page > 1) {
+              this.setPage(this.state.page - 1);
+            } else {
+              this.showProgress(false);
+              this.setState({
+                ...this.state,
+                data: [],
+              });
+              this.forceUpdate();
+            }
           }
-        }
         );
     }, timeout); // Will do the ajax stuff after 1000 ms, or 1 s
   }
@@ -167,7 +178,6 @@ class HomePage extends React.Component {
       to,
       page: 1,
     });
-
     //    this.doSearch();
   }
 
@@ -213,14 +223,8 @@ class HomePage extends React.Component {
         <div className="results">
           {this.state.queryInProgress ?
             <Spinner
+              className="spinner"
               name="ball-spin-fade-loader"
-              style={{
-                position: 'relative',
-                left: '50%',
-                top: '50px',
-                width: '100px',
-                zIndex: 1000,
-              }}
             />
             : null}
           <DataTables
@@ -230,9 +234,11 @@ class HomePage extends React.Component {
             columns={this.state.columns}
             data={this.state.data}
             page={this.state.page}
+            rowSize={this.state.pageSize}
             count={1000}
             onNextPageClick={this.handleNextPageClick}
             onPreviousPageClick={this.handlePreviousPageClick}
+            onRowSizeChange={this.handleRowSizeChange}
             showCheckboxes={false}
             onSortOrderChange={this.handleSortOrderChange}
             initialSort={{ column: 'name', order: 'asc' }}

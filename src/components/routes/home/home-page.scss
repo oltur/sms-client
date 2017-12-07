@@ -4,6 +4,14 @@
     label {
       display: inline-block;
       width: 100px;
-    }    
+    }
   }
+}
+
+.spinner {
+  position: 'relative';
+  left: '50%';
+  top: '50px';
+  width: '100px';
+  z-index: 1000;
 }
