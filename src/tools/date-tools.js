@@ -28,6 +28,15 @@ class DateTools {
 
     return `${DateTools.formatDate(date)} ${[hours, minutes, seconds].join(':')}`;
   }
+
+  static addYears(years = -5, date = new Date()) {
+    const d = date;
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const day = d.getDate();
+    const result = new Date(year + years, month, day);
+    return result;
+  }
 }
 
 export default DateTools;

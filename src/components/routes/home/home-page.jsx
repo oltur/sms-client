@@ -1,8 +1,6 @@
 import React from 'react';
 import Spinner from 'react-spinkit';
 
-import DatePicker from 'material-ui/DatePicker';
-
 import DataTables from 'material-ui-datatables';
 
 import { Card, CardHeader } from 'material-ui/Card';
@@ -17,7 +15,7 @@ class HomePage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      from: this.addYears(-5),
+      from: DateTools.addYears(-5),
       to: new Date(),
       page: 1,
       columns: [
@@ -69,8 +67,14 @@ class HomePage extends React.Component {
   componentWillUnmount() {
   }
 
-  get hasData() {
-    return (this.state.data && this.state.data.length > 0);
+  componentDidUpdate(prevProps, prevState) {
+    const elems = document.querySelectorAll('div.results table tbody tr td:nth-child(7)');
+    elems.forEach((elem) => {
+      const color = elem.innerHTML;
+      if (color.startsWith('#')) {
+        elem.innerHTML = `<span style="color:${color}">${color}</span>`;
+      }
+    });
   }
 
   setPage(page) {
@@ -91,15 +95,6 @@ class HomePage extends React.Component {
   handleNextPageClick() {
     console.log('handleNextPageClick');
     this.setPage(this.state.page + 1);
-  }
-
-  addYears(years = -5, date = new Date()) {
-    const d = date;
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    const day = d.getDate();
-    const result = new Date(year + years, month, day);
-    return result;
   }
 
   handleSortOrderChange(key, order) {
@@ -125,28 +120,28 @@ class HomePage extends React.Component {
       const to = DateTools.formatDate(this.state.to);
       this.searchService.search(from, to, (this.state.page - 1) * 10, 10)
         .then(
-          (result) => {
-            console.log(`Result for ${from}, ${to}`);
-            // console.log(result);
+        (result) => {
+          console.log(`Result for ${from}, ${to}`);
+          // console.log(result);
+          this.showProgress(false);
+          this.setState({
+            ...this.state,
+            data: result,
+          });
+          this.forceUpdate();
+        },
+        (error) => {
+          if (this.state.page > 1) {
+            this.setPage(this.state.page - 1);
+          } else {
             this.showProgress(false);
             this.setState({
               ...this.state,
-              data: result,
+              data: [],
             });
             this.forceUpdate();
-          },
-          (error) => {
-            if (this.state.page > 1) {
-              this.setPage(this.state.page - 1);
-            } else {
-              this.showProgress(false);
-              this.setState({
-                ...this.state,
-                data: [],
-              });
-              this.forceUpdate();
-            }
           }
+        }
         );
     }, timeout); // Will do the ajax stuff after 1000 ms, or 1 s
   }
